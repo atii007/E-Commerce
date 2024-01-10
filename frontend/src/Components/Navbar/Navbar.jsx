@@ -4,49 +4,20 @@ import logo from "../Assets/logo.png";
 import cart_icon from "../Assets/cart_icon.png";
 import { Link } from "react-router-dom";
 import { ShopContext } from "../../Context/Context";
+import NavLinks from "./NavLinks";
 
 const Navbar = () => {
-  const [menu, setMenu] = useState("shop");
   const { getTotalCartItems } = useContext(ShopContext);
 
   return (
     <div className="navbar">
-       <Link
-        to="/"
-        onClick={() => setMenu("shop")}
-        style={{ textDecorationLine: "none" }}
-      >
+      <Link to="/" style={{ textDecorationLine: "none" }}>
         <div className="nav-logo">
           <img src={logo} alt="" />
           <p>SHOPPER</p>
         </div>
       </Link>
-      <ul className="nav-menu">
-        <li onClick={() => setMenu("shop")}>
-          <Link to="/" style={{ textDecorationLine: "none" }}>
-            Shop
-          </Link>
-          {menu === "shop" ? <hr /> : <></>}
-        </li>
-        <li onClick={() => setMenu("men")}>
-          <Link to="/men" style={{ textDecorationLine: "none" }}>
-            Men
-          </Link>
-          {menu === "men" ? <hr /> : <></>}
-        </li>
-        <li onClick={() => setMenu("women")}>
-          <Link to="/women" style={{ textDecorationLine: "none" }}>
-            Women
-          </Link>
-          {menu === "women" ? <hr /> : <></>}
-        </li>
-        <li onClick={() => setMenu("kids")}>
-          <Link to="/kids" style={{ textDecorationLine: "none" }}>
-            Kids
-          </Link>
-          {menu === "kids" ? <hr /> : <></>}
-        </li>
-      </ul>
+      <NavLinks />
       <div className="nav-login-cart">
         <Link to="/login" style={{ textDecorationLine: "none" }}>
           <button>Login</button>
