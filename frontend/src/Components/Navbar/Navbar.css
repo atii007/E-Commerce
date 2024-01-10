@@ -13,7 +13,7 @@
 
 .nav-logo p {
     color: #171717;
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 600;
 }
 
@@ -23,7 +23,7 @@
     list-style-type: none;
     gap: 50px;
     color:#626262 ;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 500;
 }
 
@@ -51,8 +51,8 @@
 }
 
 .nav-login-cart button{
-    width: 157px;
-    height: 58px;
+    width: 120px;
+    height: 45px;
     outline: none;
     border: 1px solid #7a7a7a;
     border-radius: 75px;
