@@ -3,6 +3,7 @@ import "./ProductDisplay.css";
 import star_icon from "../Assets/star_icon.png";
 import star_dull_icon from "../Assets/star_dull_icon.png";
 import { ShopContext } from "../../Context/Context";
+import ProductSizes from "./ProductSizes";
 
 const ProductDisplay = (props) => {
   const { product } = props;
@@ -39,16 +40,7 @@ const ProductDisplay = (props) => {
           eum fugiat rerum architecto animi consequatur quo quod? Culpa,
           possimus.
         </div>
-        <div className="product-size">
-          <h1>Select Size</h1>
-          <div className="product-allsizes">
-            <div>S</div>
-            <div>M</div>
-            <div>L</div>
-            <div>XL</div>
-            <div>XXL</div>
-          </div>
-        </div>
+        <ProductSizes />
         <button
           onClick={() => {
             addToCart(product.id);

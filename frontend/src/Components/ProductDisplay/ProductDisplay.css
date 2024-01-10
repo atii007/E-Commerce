@@ -82,6 +82,7 @@ font-weight: 600;
 
 .product-allsizes div:hover{
     background: #ff4141;
+    color: white;
 }
 
 .productdisplay-right button{
