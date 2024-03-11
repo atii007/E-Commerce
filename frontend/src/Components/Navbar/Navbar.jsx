@@ -1,56 +1,80 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "./Navbar.css";
-import logo from "../Assets/logo.png";
+
 import cart_icon from "../Assets/cart_icon.png";
 import { Link } from "react-router-dom";
 import { ShopContext } from "../../Context/Context";
 import NavLinks from "./NavLinks";
-import { useEffect, useState } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { googleLogout } from "@react-oauth/google";
+import { initFirebase } from "../../firebase";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
-  const [user, setUser] = useState([]);
+  const navigate = useNavigate();
+  const app = initFirebase();
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  console.log("Current User", auth.currentUser);
+
+  const image = auth?.currentUser?.photoURL;
+  const token = auth?.currentUser?.accessToken;
+
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("User");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [profile, setProfile] = useState([]);
   const [anchorEl, setAnchorEl] = React.useState(null);
+
   const open = Boolean(anchorEl);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
 
   const { getTotalCartItems } = useContext(ShopContext);
 
-  const login = useGoogleLogin({
-    onSuccess: async (codeResponse) => {
-      console.log(user);
-      setUser(codeResponse);
-      postData();
-    },
-    onError: (error) => console.log("Login Failed:", error),
-  });
-  const logOut = () => {
-    googleLogout();
+  const login = async () => {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
 
-    setProfile(null);
-    setUser(null);
-    localStorage.removeItem("User Token", user.access_token);
+    if (user) {
+      goToShop();
+    }
+  };
+
+  const goToShop = () => {
+    navigate("/");
+  };
+
+  const logOut = () => {
+    auth.signOut();
+    navigate("/");
   };
 
   useEffect(() => {
     if (user?.access_token) {
       getData();
     }
-    if (profile) {
-      postData();
-    }
-  }, [user]);
+
+    setTimeout(() => {
+      axios
+        .get(
+          "https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user.json"
+        )
+        .then((res) => setProfile(res.data));
+    }, 1000);
+  }, [token]);
+
+  console.log("Profile Data", profile);
+
   const getData = async () => {
     axios
       .get(
@@ -63,69 +87,52 @@ const Navbar = () => {
         }
       )
       .then((res) => {
-        setProfile(res.data);
+        const userInfo = { token: user.access_token, ...res.data };
+        const id = userInfo.id;
 
-        localStorage.setItem("User Token", user.access_token);
+        fetch(
+          `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data) {
+              fetch(
+                `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`,
+                {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ userInfo }),
+                }
+              ).then((res) => console.log("patch response data", res.data));
+            } else {
+              fetch(
+                `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ userInfo }),
+                }
+              ).then((res) => console.log("put response data", res.data));
+            }
+          });
       })
       .catch((err) => console.log(err));
   };
-  const postData = async () => {
-    await fetch(
-      "https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user.json",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userToken: user.access_token,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          userId: profile.id,
-        }),
-      }
-    ).then((res) => console.log(res.data));
-  };
-  console.log(user);
-  // const postData = () => {
-  //   axios
-  //     .post(
-  //       "https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/users",
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(profile),
-  //       }
-  //     )
-  //     .then((res) => console.log(res.data));
-  // };
-  const token = localStorage.getItem("User Token");
 
   return (
     <div className="navbar">
-      <div className="nav-logo">
-        <img src={logo} alt="" />
-        <p>SHOPPER</p>
-      </div>
       <NavLinks />
       <div className="nav-login-cart">
         {token ? (
           <div>
-            {/* <Button
-              id="basic-button"
-              aria-controls={open ? "basic-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? "true" : undefined}
-              onClick={handleClick}
-            >
-
-            </Button> */}
             <img
               style={{ borderRadius: "100%", width: "50px", height: "50px" }}
               onClick={handleClick}
-              src={token && profile?.picture}
+              src={token && image}
               alt="user"
             />
             <Menu
