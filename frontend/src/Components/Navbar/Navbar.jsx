@@ -22,10 +22,6 @@ const Navbar = () => {
   const image = auth?.currentUser?.photoURL;
   const token = auth?.currentUser?.accessToken;
 
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("User");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
   const [profile, setProfile] = useState([]);
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -60,10 +56,6 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (user?.access_token) {
-      getData();
-    }
-
     setTimeout(() => {
       axios
         .get(
@@ -74,54 +66,6 @@ const Navbar = () => {
   }, [token]);
 
   console.log("Profile Data", profile);
-
-  const getData = async () => {
-    axios
-      .get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.access_token}`,
-            Accept: "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const userInfo = { token: user.access_token, ...res.data };
-        const id = userInfo.id;
-
-        fetch(
-          `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            if (data) {
-              fetch(
-                `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`,
-                {
-                  method: "PATCH",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ userInfo }),
-                }
-              ).then((res) => console.log("patch response data", res.data));
-            } else {
-              fetch(
-                `https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/user/${id}.json`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ userInfo }),
-                }
-              ).then((res) => console.log("put response data", res.data));
-            }
-          });
-      })
-      .catch((err) => console.log(err));
-  };
 
   return (
     <div className="navbar">

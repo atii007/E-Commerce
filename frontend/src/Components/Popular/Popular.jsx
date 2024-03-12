@@ -1,15 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./Popular.css";
-import data_product from "../Assets/data";
 import Item from "../Item/Item";
+import axios from "axios";
+import { useState } from "react";
 
 const Popular = () => {
+  const [popularProducts, setPopularProducts] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(
+        "https://shopper-afb67-default-rtdb.asia-southeast1.firebasedatabase.app/popular_collections.json"
+      )
+      .then((res) => {
+        setPopularProducts(res.data);
+      });
+  }, []);
+
   return (
     <div className="popular">
       <h1>POPULAR IN WOMEN</h1>
       <hr />
       <div className="popular-item">
-        {data_product.map((item, i) => {
+        {popularProducts.map((item, i) => {
           return (
             <Item
               key={i}
